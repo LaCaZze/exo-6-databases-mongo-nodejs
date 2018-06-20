@@ -1,7 +1,11 @@
 const express = require('express')
-const app = express()
-app.use('/static', express.static('static'));
+var bodyParser = require("body-parser");
 
+const app = express()
+// app.use('/static', express.static('static'));
+app.use(express.static('static'));
+
+app.use(bodyParser.urlencoded({ extended: false }))
 
 // Route qui pointe vers l'index
 app.get('/', function (req, res) {
@@ -9,6 +13,7 @@ app.get('/', function (req, res) {
 })
 
 
+//Première étape qui me permet de me connecter à mongo
 var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 
@@ -23,7 +28,7 @@ MongoClient.connect(url, function (err, db) {
   db.close();
 });
 
-
+// Route 2 : qui fait appel à ma fonction d'affichage de ma base de données.
 app.get('/data', function (req, res) {
   // res.sendFile(__dirname + '/')
 
@@ -35,24 +40,44 @@ app.get('/data', function (req, res) {
     var dbo = db.db("michael");
     dbo.collection("personnages").find({}).toArray(function (err, result) {
       if (err) throw err;
-      console.log(result);
+      // console.log(result);
       res.send(result);
       db.close();
     });
   });
 })
 
-// MongoClient.connect(url, function(err, db) {
-//   if (err) throw err;
-//   var dbo = db.db("michael");
-//   var myobj = { name: "Company Inc", genre: "Highway 37" };
-//   dbo.collection("personnages").insertOne(myobj, function(err, res) {
-//     if (err) throw err;
-//     console.log("1 document inserted");
-//     db.close();
-//   });
-// }); 
+// app.post('/', function (req, res) {
+//   var nombre11 = parseInt(req.body.num1);
+//   console.log(nombre11);
+//   var nombre22 = parseInt(req.body.num2);
+//   console.log(nombre22);
+
+//   res.end(nombre11 + "" + nombre22 + "");
 
 
+// })
+
+
+
+
+app.post('/ajout', function (req, res) {
+  var prenom = req.body.prenom;
+  var genre = req.body.genre;
+  console.log(req.body.prenom);
+  // res.send("");
+
+
+  MongoClient.connect(url, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db("michael");
+    var myobj = { name: prenom, genre: genre};
+    dbo.collection("personnages").insertOne(myobj, function (err, res) {
+      if (err) throw err;
+      console.log("1 document inserted");
+      db.close();
+    });
+  });
+})
 
 app.listen(3023)
